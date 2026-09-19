@@ -22,7 +22,7 @@ public final class NetworkConfig {
     private transient Path file;
 
     public static NetworkConfig load(MinecraftServer server) {
-        Path dir = server.getRunDirectory().resolve("config").resolve(ServerSwitch.MOD_ID);
+        Path dir = server.getRunDirectory().toPath().resolve("config").resolve(ServerSwitch.MOD_ID);
         Path file = dir.resolve("config.json");
         NetworkConfig cfg;
         try {
