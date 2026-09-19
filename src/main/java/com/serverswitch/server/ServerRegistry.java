@@ -12,8 +12,9 @@ import java.util.*;
 public final class ServerRegistry {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private final Path file;
+    private final Path serverDirectory;
     private final Map<String, VirtualServer> servers = new LinkedHashMap<>();
-    private ServerRegistry(Path file) { this.file = file; }
+    private ServerRegistry(Path file) { this.file = file; this.serverDirectory = file.getParent().getParent().resolve("servers"); }
 
     public static ServerRegistry load(MinecraftServer server) {
         Path dir = server.getRunDirectory().resolve("config").resolve(ServerSwitch.MOD_ID);
