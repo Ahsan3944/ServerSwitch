@@ -23,15 +23,11 @@ public final class PlayerCommands {
                     return 1;
                 }));
 
-        dispatcher.register(net.minecraft.server.command.CommandManager.literal("server")
+        var server = net.minecraft.server.command.CommandManager.literal("server")
                 .executes(ctx -> {
                     var servers = ServerSwitch.servers().getServers().stream()
-                            .filter(s -> s.enabled && !s.hidden)
+                            .filter(s -> s.enabled && (!s.hidden || ctx.getSource().hasPermissionLevel(2)))
                             .toList();
-                    if (servers.isEmpty()) {
-                        ctx.getSource().sendFeedback(() -> Text.literal("No public servers are currently available."), false);
-                        return 1;
-                    }
                     ctx.getSource().sendFeedback(() -> Text.literal("Available servers:"), false);
                     for (VirtualServer s : servers) {
                         String state = s.locked ? " [LOCKED]" : "";
@@ -50,9 +46,7 @@ public final class PlayerCommands {
                         .executes(ctx -> {
                             String id = StringArgumentType.getString(ctx, "server");
                             ServerPlayerEntity player = ctx.getSource().getPlayer();
-                            if ("hub".equalsIgnoreCase(id)) {
-                                return ServerSwitch.servers().sendToHub(player) ? 1 : 0;
-                            }
+                            if ("hub".equalsIgnoreCase(id)) return ServerSwitch.servers().sendToHub(player) ? 1 : 0;
                             VirtualServer target = ServerSwitch.servers().get(id);
                             if (!ServerSwitch.servers().canJoin(player, target)) {
                                 ctx.getSource().sendError(Text.literal("That server is unavailable."));
@@ -64,12 +58,10 @@ public final class PlayerCommands {
                             }
                             ctx.getSource().sendFeedback(() -> Text.literal("Connected to " + target.displayName + "."), false);
                             return 1;
-                        })));
-
-        dispatcher.register(net.minecraft.server.command.CommandManager.literal("server")
+                        }))
                 .then(net.minecraft.server.command.CommandManager.literal("help")
                         .executes(ctx -> {
-                            ctx.getSource().sendFeedback(() -> Text.literal("/server - list servers"), false);
+                            ctx.getSource().sendFeedback(() -> Text.literal("/server - list available servers"), false);
                             ctx.getSource().sendFeedback(() -> Text.literal("/server <name> - join a server"), false);
                             ctx.getSource().sendFeedback(() -> Text.literal("/hub - return to HUB"), false);
                             return 1;
@@ -79,6 +71,7 @@ public final class PlayerCommands {
                         .executes(ctx -> {
                             ctx.getSource().sendFeedback(() -> Text.literal("ServerSwitch " + ServerSwitch.VERSION + " | Minecraft 1.20.1"), true);
                             return 1;
-                        })));
+                        }));
+        dispatcher.register(server);
     }
 }
