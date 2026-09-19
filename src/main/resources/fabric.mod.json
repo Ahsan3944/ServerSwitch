@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "serverswitch",
+  "version": "${version}",
+  "name": "ServerSwitch",
+  "description": "Server-side virtual server switching and HUB management for Fabric.",
+  "authors": ["Ahsan"],
+  "contact": {
+    "homepage": "https://github.com/Ahsan3944/ServerSwitch",
+    "sources": "https://github.com/Ahsan3944/ServerSwitch"
+  },
+  "license": "MIT",
+  "environment": "server",
+  "entrypoints": { "main": ["com.serverswitch.ServerSwitch"] },
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "1.20.1",
+    "fabric-api": ">=0.92.0+1.20.1"
+  }
+}
