@@ -3,7 +3,7 @@ package com.serverswitch.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.serverswitch.ServerSwitch;
-import com.serverswitch.server.VirtualServer;
+import com.serverswitch.server.VirtualServer;\nimport com.serverswitch.gui.ServerSelector;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -25,14 +25,7 @@ public final class PlayerCommands {
 
         var server = net.minecraft.server.command.CommandManager.literal("server")
                 .executes(ctx -> {
-                    var servers = ServerSwitch.servers().getServers().stream()
-                            .filter(s -> s.enabled && (!s.hidden || ctx.getSource().hasPermissionLevel(2)))
-                            .toList();
-                    ctx.getSource().sendFeedback(() -> Text.literal("Available servers:"), false);
-                    for (VirtualServer s : servers) {
-                        String state = s.locked ? " [LOCKED]" : "";
-                        ctx.getSource().sendFeedback(() -> Text.literal("- " + s.displayName + state + " (" + s.id + ")"), false);
-                    }
+                    ServerSelector.open(ctx.getSource().getPlayer());
                     return 1;
                 })
                 .then(net.minecraft.server.command.CommandManager.argument("server", StringArgumentType.word())
