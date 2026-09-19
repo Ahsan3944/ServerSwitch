@@ -40,18 +40,55 @@ public final class ServerRegistry {
     public boolean create(String id) {
         id = id.toLowerCase(Locale.ROOT);
         if (!isValidId(id) || servers.containsKey(id)) return false;
-        VirtualServer s = new VirtualServer(id); s.order = servers.size(); servers.put(id, s); save(); return true;
+        VirtualServer s = new VirtualServer(id);
+        s.order = servers.size();
+        servers.put(id, s);
+        ensureServerDirectory(id);
+        save();
+        return true;
     }
     public boolean delete(String id) { if (id == null || servers.remove(id.toLowerCase(Locale.ROOT)) == null) return false; normalizeOrder(); save(); return true; }
     public void normalizeOrder() { int i=0; for (VirtualServer s: servers.values()) s.order=i++; }
     public void save() {
         try {
             Files.createDirectories(file.getParent());
+            Files.createDirectories(serverDirectory);
+            for (VirtualServer server : servers.values()) writeServerProfile(server);
             Path tmp=file.resolveSibling("servers.json.tmp");
             Files.writeString(tmp, GSON.toJson(servers.values()), StandardCharsets.UTF_8);
             try { Files.move(tmp,file,StandardCopyOption.REPLACE_EXISTING,StandardCopyOption.ATOMIC_MOVE); }
             catch(IOException e){ Files.move(tmp,file,StandardCopyOption.REPLACE_EXISTING); }
         } catch(IOException e){ ServerSwitch.LOGGER.error("Could not save servers.json.",e); }
     }
+    private void ensureServerDirectory(String id) {
+        try {
+            Path dir = serverDirectory.resolve(id);
+            Files.createDirectories(dir);
+            Path profile = dir.resolve("server.json");
+            if (!Files.exists(profile)) {
+                Files.writeString(profile, GSON.toJson(servers.get(id)), StandardCharsets.UTF_8);
+            }
+        } catch (IOException e) {
+            ServerSwitch.LOGGER.error("Could not create server profile directory for " + id, e);
+        }
+    }
+
+    private void writeServerProfile(VirtualServer server) {
+        try {
+            Path dir = serverDirectory.resolve(server.id);
+            Files.createDirectories(dir);
+            Path profile = dir.resolve("server.json");
+            Path tmp = dir.resolve("server.json.tmp");
+            Files.writeString(tmp, GSON.toJson(server), StandardCharsets.UTF_8);
+            try {
+                Files.move(tmp, profile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (IOException e) {
+                Files.move(tmp, profile, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            ServerSwitch.LOGGER.error("Could not save server profile " + server.id, e);
+        }
+    }
+
     public static boolean isValidId(String id){ return id != null && id.matches("[a-z0-9][a-z0-9_-]{0,31}"); }
 }
