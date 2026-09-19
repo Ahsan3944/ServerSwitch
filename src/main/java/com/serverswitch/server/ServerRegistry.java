@@ -17,7 +17,7 @@ public final class ServerRegistry {
     private ServerRegistry(Path file) { this.file = file; this.serverDirectory = file.getParent().getParent().getParent().resolve("serverswitch").resolve("servers"); }
 
     public static ServerRegistry load(MinecraftServer server) {
-        Path dir = server.getRunDirectory().resolve("config").resolve(ServerSwitch.MOD_ID);
+        Path dir = server.getRunDirectory().toPath().resolve("config").resolve(ServerSwitch.MOD_ID);
         Path file = dir.resolve("servers.json");
         ServerRegistry registry = new ServerRegistry(file);
         try {
